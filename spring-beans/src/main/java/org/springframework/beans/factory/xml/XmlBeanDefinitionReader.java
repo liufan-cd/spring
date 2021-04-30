@@ -301,6 +301,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		// 将resource包装了一次
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
@@ -316,7 +317,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		if (logger.isInfoEnabled()) {
 			logger.info("Loading XML bean definitions from " + encodedResource);
 		}
-
+		// 从线程中获取，大概是确认当前线程是否处理了这些资源
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<EncodedResource>(4);
@@ -327,12 +328,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 		try {
+			// 读取输入流，这个时候开始进行读取输入流
 			InputStream inputStream = encodedResource.getResource().getInputStream();
 			try {
+				// 包装一次
 				InputSource inputSource = new InputSource(inputStream);
 				if (encodedResource.getEncoding() != null) {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
+				// 解析输入流，当前这个是一个xml文件，前面是循环读取所有位置的配置文件
+				// do，干活的方法
 				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 			}
 			finally {
@@ -388,7 +393,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
 			throws BeanDefinitionStoreException {
 		try {
+			// 获取到文件，将文件解析成一个文档类，因为xml本身就类似一个文档
 			Document doc = doLoadDocument(inputSource, resource);
+			// 解析beanDefinition，并将这个解析信息注册到指定的注册中心，defaultBeanFactory实现了注册中心，所以就是我们默认的工厂里面了
 			return registerBeanDefinitions(doc, resource);
 		}
 		catch (BeanDefinitionStoreException ex) {
@@ -503,9 +510,14 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 这个不知道，创建一个文档阅读器吧
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 获取之前注册的beanDefinition数量，其实就是个Map
+		// 就是这个this.beanDefinitionMap.size();
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 解析xml获取beanDefinition，进行注册
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 返回变动的数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 

@@ -82,6 +82,7 @@ public class PluggableSchemaResolver implements EntityResolver {
 	 */
 	public PluggableSchemaResolver(ClassLoader classLoader) {
 		this.classLoader = classLoader;
+		// 默认的的schema地址
 		this.schemaMappingsLocation = DEFAULT_SCHEMA_MAPPINGS_LOCATION;
 	}
 

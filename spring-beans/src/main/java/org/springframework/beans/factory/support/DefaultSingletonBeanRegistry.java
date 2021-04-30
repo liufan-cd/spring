@@ -170,6 +170,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	@Override
 	public Object getSingleton(String beanName) {
+		// 是否允许只是一个引用，就是半成品，也可以说只是一个单纯的空的实例，在这之后还需要进行属性填充，和其余生命周期
 		return getSingleton(beanName, true);
 	}
 
@@ -182,7 +183,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// 从一级缓存中获取对象
 		Object singletonObject = this.singletonObjects.get(beanName);
+		// 如果当前获取到的对象为空判断是否是正在进行创建
+		// 没有正在进行创建说明这个对象还没有进行创建，返回空
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
@@ -210,6 +214,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "'beanName' must not be null");
 		synchronized (this.singletonObjects) {
+			// 再次从一级缓存获取，如果是在创建过程中，这个值是继续为空的
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
@@ -220,6 +225,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				// 在创建对象之前
+				// 一个钩子方法，可以拓展，但是正常来说你可以在前置处理器（BeanProcessor）中进行处理
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
@@ -227,6 +234,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<Exception>();
 				}
 				try {
+					// 调用lamda表达式，创建对象
+					// 这个时候这个singletonFactory传过来的方法就是一个创建方法
+					// 传递方法是AbstractBeanFactory的318行
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}

@@ -721,6 +721,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Override
 	public void preInstantiateSingletons() throws BeansException {
+		// 实例化单例对象
 		if (logger.isDebugEnabled()) {
 			logger.debug("Pre-instantiating singletons in " + this);
 		}
@@ -731,8 +732,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
+			// 这个方法网上要去查一下，获取合并后的本地beanDefinition
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			// 判断当前对象不是抽象，是单例，不是懒加载
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				// 判断这个是不是一个工厂的名字
 				if (isFactoryBean(beanName)) {
 					final FactoryBean<?> factory = (FactoryBean<?>) getBean(FACTORY_BEAN_PREFIX + beanName);
 					boolean isEagerInit;
@@ -753,6 +757,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					// 重点来了，整个容器第二重要的方法，getBean
 					getBean(beanName);
 				}
 			}
@@ -830,6 +835,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 总算到最后了，这里将解析到的这个beanDefinition放入到map中
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {

@@ -59,8 +59,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	public Object instantiate(RootBeanDefinition bd, String beanName, BeanFactory owner) {
 		// Don't override the class with CGLIB if no overrides.
 		if (bd.getMethodOverrides().isEmpty()) {
+			// 终于到这里来了，反射获取构造器
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
+				// 从之前的判断中获取构造器，没有就自己反射获取
+				// 这个主要还是为了拓展
 				constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse == null) {
 					final Class<?> clazz = bd.getBeanClass();
@@ -68,6 +71,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 						throw new BeanInstantiationException(clazz, "Specified class is an interface");
 					}
 					try {
+						// 不知道这个判断是干嘛的
 						if (System.getSecurityManager() != null) {
 							constructorToUse = AccessController.doPrivileged(new PrivilegedExceptionAction<Constructor<?>>() {
 								@Override
@@ -79,6 +83,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 						else {
 							constructorToUse =	clazz.getDeclaredConstructor((Class[]) null);
 						}
+						// 在这里设置解析出来要使用的构造方法或者工厂方法
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
 					}
 					catch (Throwable ex) {
@@ -86,6 +91,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					}
 				}
 			}
+			// 创建实例，我哭了
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {

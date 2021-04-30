@@ -26,4 +26,12 @@ public class StudentServiceImpl implements StudentService {
 
     public StudentServiceImpl() {
     }
+
+    public String getIdentify() {
+        return identify;
+    }
+
+    public void setIdentify(String identify) {
+        this.identify = identify;
+    }
 }

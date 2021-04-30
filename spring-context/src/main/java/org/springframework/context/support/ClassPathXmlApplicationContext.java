@@ -80,6 +80,7 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @throws BeansException if context creation failed
 	 */
 	public ClassPathXmlApplicationContext(String configLocation) throws BeansException {
+		//调用本类构造方法
 		this(new String[] {configLocation}, true, null);
 	}
 
@@ -132,10 +133,12 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 */
 	public ClassPathXmlApplicationContext(String[] configLocations, boolean refresh, ApplicationContext parent)
 			throws BeansException {
-
+		// 初始化父类属性，是直系父类ApplicationContext中的属性，BeanFactory是聚合进来的，不由这个构造方法初始
 		super(parent);
+		// 解析配置文件路径，保存到一个String数组中
 		setConfigLocations(configLocations);
 		if (refresh) {
+			// 刷新容器******核心中的核心
 			refresh();
 		}
 	}

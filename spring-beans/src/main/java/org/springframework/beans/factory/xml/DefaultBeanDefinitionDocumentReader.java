@@ -88,9 +88,12 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 */
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
+		// 设置阅读环境
 		this.readerContext = readerContext;
 		logger.debug("Loading bean definitions");
+		// 获取根标签
 		Element root = doc.getDocumentElement();
+		// 解析BeanDefinition
 		doRegisterBeanDefinitions(root);
 	}
 
@@ -114,16 +117,24 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * Register each bean definition within the given root {@code <beans/>} element.
 	 */
 	protected void doRegisterBeanDefinitions(Element root) {
+		// 这里的root是树的递归问题，我猜应该是当前解析dom树，每个标签子标签的原因
+
+
 		// Any nested <beans> elements will cause recursion in this method. In
 		// order to propagate and preserve <beans> default-* attributes correctly,
 		// keep track of the current (parent) delegate, which may be null. Create
 		// the new (child) delegate with a reference to the parent for fallback purposes,
 		// then ultimately reset this.delegate back to its original (parent) reference.
 		// this behavior emulates a stack of delegates without actually necessitating one.
+		// 指定了一个parent
+		// delegate实际上是一个委托类
 		BeanDefinitionParserDelegate parent = this.delegate;
+		// 这里应该是递归了吧，反正这个是当前标签了
+		// 这里里面逻辑不清楚，但是这个对象是解析后的新对象了，
 		this.delegate = createDelegate(getReaderContext(), root, parent);
-
+		// 判断是否是默认的命名空间，默认的命名空间包括<beans/><import/>这些，大概
 		if (this.delegate.isDefaultNamespace(root)) {
+			// 判断运行的profile
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
@@ -137,9 +148,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				}
 			}
 		}
-
+		// 前置处理 钩子函数
 		preProcessXml(root);
+		// 解析xml的当前标签，经过上述一系列判断之后，这个标签是一个有效的Beans标签，它下面有很多的bean子标签
 		parseBeanDefinitions(root, this.delegate);
+		// 后置处理 钩子函数
 		postProcessXml(root);
 
 		this.delegate = parent;
@@ -160,15 +173,20 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 */
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		if (delegate.isDefaultNamespace(root)) {
+			// 获取所有的bean子标签
 			NodeList nl = root.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node node = nl.item(i);
+				// 判断子标签是不是一个有效的element，是我就解析，不是交给客户解析
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 					if (delegate.isDefaultNamespace(ele)) {
+						// 解析默认标签
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						// 这个方法是用于客户标签的，比如mvc等等，不是默认标签
+						// 我猜在实现解析mvc这些标签的时候，对应的实体类应该是继承了element的
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -180,15 +198,19 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	}
 
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
+		// <import/>
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
 		}
+		// <alias/>
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
 			processAliasRegistration(ele);
 		}
+		// <bean/> ***重点
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
+		// <beans/>这个递归调用？
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
 			// recurse
 			doRegisterBeanDefinitions(ele);
@@ -296,11 +318,13 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		// 进行解析标签的信息将结果保存到holder
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.
+				// 注册最终解析的beanDefinition
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}
 			catch (BeanDefinitionStoreException ex) {

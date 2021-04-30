@@ -178,6 +178,7 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		Assert.notNull(resources, "Resource array must not be null");
 		int counter = 0;
 		for (Resource resource : resources) {
+			// 循环读取每个配置文件对应的resource
 			counter += loadBeanDefinitions(resource);
 		}
 		return counter;
@@ -204,17 +205,22 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
 	 */
 	public int loadBeanDefinitions(String location, Set<Resource> actualResources) throws BeanDefinitionStoreException {
+		// 获取之前初始化的资源加载器，使用一个包装类处理文件加载
 		ResourceLoader resourceLoader = getResourceLoader();
 		if (resourceLoader == null) {
 			throw new BeanDefinitionStoreException(
 					"Cannot import bean definitions from location [" + location + "]: no ResourceLoader available");
 		}
-
+		// 是这个类型就说明是我们要解析的xml，这个类是抽象类，考虑了很多，所以在这里进行了判断
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				// 读取配置文件
+				// 还没进行读取，这里是将配置文件位置创建了一个Resource对象
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				// 重点根据配置文件，创建BeanDefinition，返回所有读取到的bean的总数
 				int loadCount = loadBeanDefinitions(resources);
+				// 这个不知道是写的什么东西
 				if (actualResources != null) {
 					for (Resource resource : resources) {
 						actualResources.add(resource);
@@ -249,6 +255,7 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		Assert.notNull(locations, "Location array must not be null");
 		int counter = 0;
 		for (String location : locations) {
+			// 循环加载地址指定的配置文件信息
 			counter += loadBeanDefinitions(location);
 		}
 		return counter;

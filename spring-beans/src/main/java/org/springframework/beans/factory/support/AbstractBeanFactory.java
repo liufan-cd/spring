@@ -240,7 +240,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		// 重点中的重点，获取单例对象
+		// 尚未创建的对象返回为空
 		Object sharedInstance = getSingleton(beanName);
+		// 这个是带参数的查询吧
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
@@ -251,9 +254,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.debug("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			// 不知道干嘛的
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
-
+		// 到这了就表示没有这个对象
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
@@ -304,7 +308,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				// 前面全部是进行判断，后面再看
 				if (mbd.isSingleton()) {
+					// 创建对象
 					sharedInstance = getSingleton(beanName, new ObjectFactory<Object>() {
 						@Override
 						public Object getObject() throws BeansException {

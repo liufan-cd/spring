@@ -79,17 +79,25 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
 		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		// 读取xml配置类，将工厂聚合进去
+		// 适配器模式？反正是使用一个类包装了一系列的属性来处理
+		// 这里传入beanFactory是作为注册中心
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 
 		// Configure the bean definition reader with this context's
 		// resource loading environment.
+		// 设置这个包装类的属性
 		beanDefinitionReader.setEnvironment(this.getEnvironment());
+		// 这里是设置资源加载器
 		beanDefinitionReader.setResourceLoader(this);
+		// 获取实体解析器
 		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
 		// Allow a subclass to provide custom initialization of the reader,
 		// then proceed with actually loading the bean definitions.
+		// 初始化和验证
 		initBeanDefinitionReader(beanDefinitionReader);
+		// 加载beanDefinition，重点
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
@@ -102,6 +110,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader#setDocumentReaderClass
 	 */
 	protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
+		// 设置是否进行校验
 		reader.setValidating(this.validating);
 	}
 
@@ -118,10 +127,12 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see #getResourcePatternResolver
 	 */
 	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
+		// 获取配置资源，没有跳过
 		Resource[] configResources = getConfigResources();
 		if (configResources != null) {
 			reader.loadBeanDefinitions(configResources);
 		}
+		// 获取xml配置文件路径
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
 			reader.loadBeanDefinitions(configLocations);

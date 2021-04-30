@@ -3,5 +3,10 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-    <context:component-scan base-package="person.liufan.spring"/>
+    <bean id="first" class="person.liufan.spring.student.entity.FirstClass">
+        <property name="second" ref="second"/>
+    </bean>
+    <bean id="second" class="person.liufan.spring.student.entity.SecondClass">
+        <property name="first" ref="first"/>
+    </bean>
 </beans>
