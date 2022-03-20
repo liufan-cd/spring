@@ -9,4 +9,5 @@
     <bean id="second" class="person.liufan.spring.student.entity.SecondClass">
         <property name="first" ref="first"/>
     </bean>
+    <context:component-scan base-package="person.liufan.spring.student"/>
 </beans>
